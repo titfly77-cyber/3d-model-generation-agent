@@ -1,5 +1,161 @@
 # FORMA — AI 3D Design Agent
 
+FORMA is an intelligent design agent that creates 3D assets from natural language and reference images. Users simply describe the object they want, or upload a reference image, and the system orchestrates the generation pipeline — invoking image and 3D generation models, post-processing model files automatically, and delivering interactive previews and downloadable results in a web interface.
+
+This project turns the traditional 3D production workflow:
+
+```text
+ideation → manual modeling → texturing → mesh cleanup → rendering & export
+```
+
+into an agent-orchestrated, automated pipeline:
+
+```text
+natural language or reference image
+        ↓
+requirement understanding & prompt optimization
+        ↓
+multi-view reference generation & review
+        ↓
+image-to-3D generation
+        ↓
+Blender automation & inspection
+        ↓
+web preview & multi-format asset delivery
+```
+
+## What it can do
+
+### Text-to-3D
+
+After the user describes an object's shape, material, color, style, and purpose, the agent first organizes the requirements and produces a description suitable for 3D reconstruction, then uses a text-to-image model to generate front, side, and back reference views of the same object. Once layout and consistency checks pass, the multi-view references are submitted to an image-to-3D model for reconstruction.
+
+When the user describes a concrete, identifiable product, vehicle, building, or other specific object, the agent can first retrieve public images and perform visual verification. Images are used as generation references only after they are confirmed to match the target object; when no reliable reference exists, the system completes the concept design from the text description alone.
+
+### Image-to-3D
+
+Users can upload an image of an object and go directly into the reconstruction pipeline. The system normalizes image orientation, transparent background, and dimensions, checks that the subject is clearly visible, and then calls the image-to-3D model to generate geometry and textures.
+
+### Agent workflow
+
+The project uses a stateful agent workflow to organize the entire generation process. Each stage has explicit inputs, outputs, and inspection results:
+
+1. Understand the user's requirements and generate a structured design brief.
+2. Optimize the image-generation prompts.
+3. Retrieve and verify usable public reference images.
+4. Generate or prepare single-view and multi-view references.
+5. Check subject completeness, view ordering, and cross-view consistency.
+6. Call cloud image-to-3D services to generate model candidates.
+7. Use Blender to automatically clean up meshes, materials, and the scene.
+8. Render multiple inspection views and compare the references against the 3D results.
+9. Select the highest-quality candidate and deliver the final asset.
+
+The workflow saves stage state and intermediate results. An interrupted task can resume from completed stages, avoiding re-running generation steps that already finished.
+
+### Automated checks & human decision
+
+FORMA checks multi-view layout, subject completeness, view consistency, model-file integrity, and basic geometric validity. When visual review fails, the system can automatically regenerate candidates while keeping previous results for comparison.
+
+Automated checks surface obvious problems but do not replace human acceptance. When multi-view references fail the automated validation, the system pauses 3D generation and lets the user choose to regenerate the references or accept the risk and continue. Results without full visual confirmation are marked "pending human review".
+
+### Blender automation
+
+Generated 3D models go through a Blender post-processing pipeline covering model import, basic mesh checks, material and texture preservation, scene cleanup, multi-angle inspection rendering, and format export. The project delivers multiple 3D file formats suitable for web preview and further editing.
+
+### Web 3D workbench
+
+The frontend provides a complete generation and asset-management interface. Users can:
+
+- Create text-to-3D or image-to-3D tasks.
+- View the agent's current stage and execution trace.
+- Inspect the reference images and review results used for generation.
+- Rotate, zoom, and examine 3D models in the browser.
+- Download generated models and related assets.
+- Manage and delete local asset records.
+- Configure swappable language models, text-to-image models, and image-to-3D services.
+
+## System architecture
+
+```text
+┌──────────────────────────────────────┐
+│            React Web Studio          │
+│ task create · trace · 3D preview ·   │
+│            asset management          │
+└──────────────────┬───────────────────┘
+                   │
+                   ▼
+┌──────────────────────────────────────┐
+│             FastAPI Backend          │
+│  local API · files · task queue ·    │
+│            state recovery            │
+└──────────────────┬───────────────────┘
+                   │
+                   ▼
+┌──────────────────────────────────────┐
+│          LangGraph Agent Flow        │
+│ analysis → reference → review → 3D → │
+│              acceptance              │
+└───────────┬──────────────┬───────────┘
+            │              │
+            ▼              ▼
+┌──────────────────┐  ┌──────────────────┐
+│ Image Generation │  │  Image-to-3D API │
+│  text-to-image & │  │  single & multi- │
+│  reference views │  │  view reconstruct│
+└─────────┬────────┘  └─────────┬────────┘
+          │                     │
+          └──────────┬──────────┘
+                     ▼
+          ┌────────────────────┐
+          │ Blender Automation │
+          │ process · inspect ·│
+          │   render · export  │
+          └──────────┬─────────┘
+                     ▼
+          ┌────────────────────┐
+          │   3D Asset Output  │
+          │ GLB · OBJ · STL etc│
+          └────────────────────┘
+```
+
+## Tech stack
+
+- **Agent orchestration:** LangGraph, LLM structured output, state checkpoints
+- **Backend:** Python, FastAPI, SQLite
+- **Image generation:** swappable text-to-image models and compatible APIs
+- **3D generation:** cloud 3D services supporting single-view and multi-view reconstruction
+- **3D processing:** Blender, Blender Python API, Trimesh
+- **Frontend:** React, Three.js, WebGL
+- **Asset formats:** GLB, OBJ, STL, FBX, BLEND
+
+## Design principles
+
+- **Swappable models:** language models, text-to-image models, and image-to-3D services are connected through unified configuration.
+- **Resumable process:** completed steps, intermediate references, and model candidates are kept to support resuming after interruption.
+- **Traceable results:** every task records its stages, inspection results, candidate versions, and final selection rationale.
+- **Human-in-the-loop:** the agent executes and checks, while the user keeps final say over uncertain outcomes.
+- **Preserve original assets:** reference images, generated candidates, and delivered files are stored separately for review and later processing.
+- **Careful quality claims:** automated scores are used for candidate comparison and are not described as real measurement accuracy or engineering certification.
+
+## Use cases
+
+- Prop prototypes for games and interactive applications
+- Product appearance and industrial design concept validation
+- Teaching, experimentation, and agent-workflow research
+- Display models and web 3D content production
+- Pre-production concept models for 3D printing
+- AR, VR, and digital content asset prototypes
+
+## Positioning
+
+FORMA is currently positioned as an experimental project in AI 3D generation and agent workflows. It explores how natural-language understanding, reference-image generation, multi-view reconstruction, automated 3D processing, and human review combine into a complete creation tool.
+
+Generated results suit concept design, rapid prototyping, and visual experiments. Auto-generated models do not guarantee precise dimensions, mechanical assembly, structural strength, watertight meshes, print wall thickness, or production-grade topology by default — professional inspection and processing are still required before use in production, engineering, or 3D printing.
+
+---
+
+# FORMA — AI 3D 设计 Agent
+
 FORMA 是一个通过自然语言和参考图片创建 3D 资产的智能设计 Agent。用户只需要描述想要的物体，或上传一张参考图片，系统就会组织生成流程、调用图像与 3D 生成模型、自动处理模型文件，并在网页中提供可交互的预览和下载结果。
 
 这个项目希望把传统的 3D 制作流程：
