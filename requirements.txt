@@ -1,0 +1,11 @@
+fastapi>=0.115,<1
+uvicorn>=0.34,<1
+httpx>=0.28,<1
+python-multipart>=0.0.20
+cos-python-sdk-v5>=1.9.39,<2
+pillow>=11,<13
+langgraph>=1.0,<2
+langgraph-checkpoint-sqlite>=3,<4
+trimesh>=4.6,<5
+numpy>=2,<3
+pytest>=8,<10

@@ -1,0 +1,22 @@
+{
+  "name": "forma-3d-studio",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "vite build",
+    "test:e2e": "node ../tests/browser.mjs"
+  },
+  "dependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "three": "^0.183.0",
+    "lucide-react": "^0.468.0"
+  },
+  "devDependencies": {
+    "vite": "^6.3.0",
+    "@vitejs/plugin-react": "^4.4.0",
+    "playwright": "^1.51.0"
+  }
+}
